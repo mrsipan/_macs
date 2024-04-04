@@ -590,6 +590,51 @@ you should place your code here."
     (defun mrsipper/to-html-then-clipboard (&optional b e)
       (interactive "r")
       ())
+    (defun mrsiesta/to-md-then-clipboard ()
+      (interactive)
+      (setq-local current-point (point))
+      (re-search-backward "^\* ")
+      (org-mark-subtree)
+      (shell-command-on-region
+       (region-beginning)
+       (region-end)
+       "pandoc --from=org --to=markdown  | pbcopy"
+       )
+      (deactivate-mark)
+      (goto-char current-point)
+      )
+
+    (defun mrsiesta/to-jira-then-clipboard ()
+      (interactive)
+      (setq-local current-point (point))
+      (re-search-backward "^\* ")
+      (org-mark-subtree)
+      (shell-command-on-region
+       (region-beginning)
+       (region-end)
+       "pandoc --from=org --to=jira  | pbcopy"
+       )
+      (deactivate-mark)
+      (goto-char current-point)
+      )
+
+    (defun mrsiesta/whole-top-subtree-to-html ()
+      (interactive)
+
+      (setq-local current-point (point))
+      (re-search-backward "^\* ")
+      (org-mark-subtree)
+      (let
+          (
+           (tmp-file (make-temp-file "tmp_" nil ".org"))
+           )
+        (write-region (region-beginning) (region-end) tmp-file)
+        (shell-command (format "pandoc --toc --template uikit.html -f org -t html < %s > %s.html" tmp-file tmp-file))
+        (shell-command (format "open %s.html" tmp-file))
+        )
+      (deactivate-mark)
+      (goto-char current-point)
+     )
     )
 
   (define-key evil-normal-state-map (kbd "gR")
